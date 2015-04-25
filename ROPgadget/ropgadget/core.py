@@ -76,12 +76,12 @@ class Core(cmd.Cmd):
             return False
 
         arch = self.__binary.getArchMode()
-        print "Gadgets information\n============================================================"
+        #print "Gadgets information\n============================================================"
         for gadget in self.__gadgets:
             vaddr = gadget["vaddr"]
             insts = gadget["gadget"]
             print ("0x%08x" %(vaddr) if arch == CS_MODE_32 else "0x%016x" %(vaddr)) + " : %s" %(insts)
-        print "\nUnique gadgets found: %d" %(len(self.__gadgets))
+        #print "\nUnique gadgets found: %d" %(len(self.__gadgets))
         return True
 
 
