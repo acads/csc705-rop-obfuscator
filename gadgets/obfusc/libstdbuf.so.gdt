@@ -1,0 +1,77 @@
+0x0000000000001014 : add bh, al ; fsubr qword ptr [r8 - 0x7e] ; ret 0xe90a
+0x0000000000000f3f : add byte ptr [rax - 0x77], cl ; in al, dx ; pop rbp ; ret
+0x0000000000001012 : add byte ptr [rax], al ; add bh, al ; fsubr qword ptr [r8 - 0x7e] ; ret 0xe90a
+0x0000000000000f3d : add byte ptr [rax], al ; add byte ptr [rax - 0x77], cl ; in al, dx ; pop rbp ; ret
+0x00000000000007f3 : add byte ptr [rax], al ; add rsp, 8 ; ret
+0x0000000000000889 : add byte ptr [rax], al ; jmp 0x809
+0x0000000000000f3e : add byte ptr [rax], al ; mov rsp, rbp ; pop rbp ; ret
+0x00000000000016dc : add byte ptr [rax], al ; pop rbp ; ret
+0x000000000000094e : add byte ptr [rcx], al ; ret
+0x000000000000094a : add eax, 0x201720 ; add ebx, esi ; ret
+0x0000000000000901 : add eax, edx ; sar rax, 1 ; jne 0x912 ; pop rbp ; ret
+0x000000000000094f : add ebx, esi ; ret
+0x00000000000008f8 : add ecx, dword ptr [rax - 0x77] ; ret 0xc148
+0x00000000000016d8 : add esp, 0x140 ; pop rbp ; ret
+0x00000000000007f6 : add esp, 8 ; ret
+0x0000000000000900 : add rax, rdx ; sar rax, 1 ; jne 0x913 ; pop rbp ; ret
+0x00000000000016d7 : add rsp, 0x140 ; pop rbp ; ret
+0x00000000000007f5 : add rsp, 8 ; ret
+0x000000000000094d : and byte ptr [rax], al ; add ebx, esi ; ret
+0x000000000000097c : and byte ptr [rax], al ; mov rbp, rsp ; call rax
+0x00000000000008d2 : and byte ptr [rax], al ; test rax, rax ; je 0x8d3 ; pop rbp ; jmp rax
+0x000000000000094b : and byte ptr [rdi], dl ; and byte ptr [rax], al ; add ebx, esi ; ret
+0x0000000000000981 : call rax
+0x00000000000008f7 : clc ; add ecx, dword ptr [rax - 0x77] ; ret 0xc148
+0x0000000000000905 : clc ; jne 0x90e ; pop rbp ; ret
+0x0000000000000979 : cmp eax, 0x20147a ; mov rbp, rsp ; call rax
+0x00000000000008c6 : cmp eax, 0xe ; ja 0x8d3 ; pop rbp ; ret
+0x00000000000008c5 : cmp rax, 0xe ; ja 0x8d4 ; pop rbp ; ret
+0x0000000000001731 : dec dword ptr [rax - 0x77] ; ret 0xb0
+0x0000000000000f3c : fadd qword ptr [rax] ; add byte ptr [rax], al ; mov rsp, rbp ; pop rbp ; ret
+0x0000000000001016 : fsubr qword ptr [r8 - 0x7e] ; ret 0xe90a
+0x0000000000001017 : fsubr qword ptr [rax - 0x7e] ; ret 0xe90a
+0x0000000000000f42 : in al, dx ; pop rbp ; ret
+0x00000000000008c4 : in eax, 0x48 ; cmp eax, 0xe ; ja 0x8d5 ; pop rbp ; ret
+0x00000000000008c9 : ja 0x8d0 ; pop rbp ; ret
+0x00000000000008d7 : je 0x8ce ; pop rbp ; jmp rax
+0x0000000000000914 : je 0x90e ; pop rbp ; mov rsi, rax ; jmp rdx
+0x000000000000088b : jmp 0x807
+0x0000000000001d0b : jmp qword ptr [rdi]
+0x00000000000008da : jmp rax
+0x000000000000091a : jmp rdx
+0x0000000000000906 : jne 0x90d ; pop rbp ; ret
+0x000000000000097a : jp 0x997 ; and byte ptr [rax], al ; mov rbp, rsp ; call rax
+0x0000000000000978 : lea edi, dword ptr [rip + 0x20147a] ; mov rbp, rsp ; call rax
+0x0000000000000949 : mov byte ptr [rip + 0x201720], 1 ; ret
+0x0000000000001b7e : mov eax, dword ptr [rax] ; mov rsp, rbp ; pop rbp ; ret
+0x000000000000097f : mov ebp, esp ; call rax
+0x00000000000008c3 : mov ebp, esp ; cmp rax, 0xe ; ja 0x8d6 ; pop rbp ; ret
+0x0000000000000918 : mov esi, eax ; jmp rdx
+0x0000000000000f41 : mov esp, ebp ; pop rbp ; ret
+0x0000000000001b7d : mov rax, qword ptr [rax] ; mov rsp, rbp ; pop rbp ; ret
+0x000000000000097e : mov rbp, rsp ; call rax
+0x0000000000000917 : mov rsi, rax ; jmp rdx
+0x0000000000000f40 : mov rsp, rbp ; pop rbp ; ret
+0x00000000000008d9 : pop rbp ; jmp rax
+0x0000000000000948 : pop rbp ; mov byte ptr [rip + 0x201720], 1 ; ret
+0x0000000000000916 : pop rbp ; mov rsi, rax ; jmp rdx
+0x00000000000008cb : pop rbp ; ret
+0x00000000000007f9 : ret
+0x0000000000000892 : ret 0x2017
+0x0000000000000d0e : ret 0x48f0
+0x0000000000001691 : ret 0x858a
+0x0000000000000a9a : ret 0x890a
+0x0000000000001734 : ret 0xb0
+0x0000000000000e8c : ret 0xb90a
+0x00000000000008fb : ret 0xc148
+0x000000000000101a : ret 0xe90a
+0x0000000000000902 : ror byte ptr [rax - 0x2f], 1 ; clc ; jne 0x911 ; pop rbp ; ret
+0x0000000000000913 : sal byte ptr [rdx + rsi*8 + 0x5d], cl ; mov rsi, rax ; jmp rdx
+0x0000000000000904 : sar eax, 1 ; jne 0x90f ; pop rbp ; ret
+0x0000000000000903 : sar rax, 1 ; jne 0x910 ; pop rbp ; ret
+0x0000000000001bb5 : sub esp, 8 ; add rsp, 8 ; ret
+0x0000000000001bb4 : sub rsp, 8 ; add rsp, 8 ; ret
+0x00000000000008d5 : test eax, eax ; je 0x8d0 ; pop rbp ; jmp rax
+0x0000000000000912 : test edx, edx ; je 0x910 ; pop rbp ; mov rsi, rax ; jmp rdx
+0x00000000000008d4 : test rax, rax ; je 0x8d1 ; pop rbp ; jmp rax
+0x0000000000000911 : test rdx, rdx ; je 0x911 ; pop rbp ; mov rsi, rax ; jmp rdx
