@@ -33,6 +33,8 @@ STR_OTHERS          = "Other gadgets"
 g_gadget_obfusc_path    = None 
 g_gadget_unobfusc_path  = None 
 g_data_path     = None
+g_bin_name      = None
+g_bin_flag      = False
 g_cat_total     = 0
 g_cat_memory    = 0
 g_cat_arith     = 0
@@ -51,9 +53,11 @@ def print_usage():
     print "Aggregates the ROP gadget category counts for coreutils binaries."
     print " "
     print "OPTIONS"
-    print " -a, --aggregate-counts  aggregate gadget category counts " \
-            "for obfuscated and unobfuscated coreutils binaries"
-    print " -h, -- help             prints this help text"
+    print " -a, --aggregate-counts          aggregate gadget category " \
+            "counts for obfuscated and unobfuscated coreutils binaries"
+    print " -b, --binary-file <Binary-File> aggregate gadget category " \
+            "counts for obfuscated and unobfuscated for given binary"
+    print " -h, -- help                     prints this help text"
     return
 
 
@@ -63,7 +67,8 @@ def print_usage():
 # Args: None
 #
 def validate_args():
-    global g_gadget_obfusc_path, g_gadget_unobfusc_path
+    global g_gadget_obfusc_path, g_gadget_unobfusc_path, \
+            g_bin_flag, g_bin_file_name
 
     if (len(sys.argv) < NUM_ARGS):
         print "ERROR: Incorrect number of arguments. See usage."
@@ -71,7 +76,7 @@ def validate_args():
         exit()
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "ha", \
+        opts, args = getopt.getopt(sys.argv[1:], "hab:", \
                 ["help", "aggregate-counts"])
     except getopt.GetoptError as err:
         print "ERROR: %s. See usage." % (err)
@@ -84,6 +89,34 @@ def validate_args():
         elif (opt in ("-a", "--aggregate-counts")):
             g_gadget_obfusc_path = GADGET_PATH + BIN_TYPE_OBFUSC + "/"
             g_gadget_unobfusc_path = GADGET_PATH + BIN_TYPE_UNOBFUSC + "/"
+        elif (opt in ("-b", "--binary-file")):
+            g_bin_flag = True
+            g_gadget_obfusc_path = GADGET_PATH + BIN_TYPE_OBFUSC + "/"
+            g_gadget_unobfusc_path = GADGET_PATH + BIN_TYPE_UNOBFUSC + "/"
+            g_bin_file_name = str(arg)
+
+            bin_file_path = g_gadget_unobfusc_path + \
+                    g_bin_file_name + ".gdt.cnt"
+            if (False == (os.path.isfile(bin_file_path))):
+                print "ERROR: Unobfuscated gadget count file for given binary is invalid. See usage."
+                print_usage()
+                exit()
+            if (False == (os.access(bin_file_path, os.R_OK))):
+                print "ERROR: Unobfuscated gadget count file for given binary is not readable. See usage."
+                print_usage()
+                exit()
+
+            bin_file_path = g_gadget_unobfusc_path + \
+                    g_bin_file_name + ".gdt.cnt"
+            if (False == (os.path.isfile(bin_file_path))):
+                print "ERROR: Obfuscated gadget count file for given binary is invalid. See usage."
+                print_usage()
+                exit()
+            if (False == (os.access(bin_file_path, os.R_OK))):
+                print "ERROR: Obfuscated gadget count file for given binary is not readable. See usage."
+                print_usage()
+                exit()
+
         else:
             print "ERROR: Incorrect argument. See usage."
             print_usage()
@@ -150,52 +183,96 @@ def main(argv):
     start_time = time.time()
     validate_args()
 
-    fw_data = open(DATA_PATH + DATA_FILE, "w")
+    if (g_bin_flag):
+        bin_data_file_name = g_bin_file_name + ".dat"
+        fw_data = open(DATA_PATH + bin_data_file_name, "w")
+        fw_data.write("Aggregated gadget counts for unobfuscated and obfuscated \"%s\" binary" \
+                % (g_bin_file_name))
+    else:
+        fw_data = open(DATA_PATH + DATA_FILE, "w")
+        fw_data.write("Aggregated gadget counts for unobfuscated and obfuscated coreutils binaries")
 
     # Write table headers
+    fw_data.write("\n")
     fw_data.write("gadget/category\t\t%7s\t\t%7s\t\t%7s\t\t%7s\t\t%7s\t\t%7s" \
             % ("total", "memory", "arith", "logic", "ctrl", "other"))
     fw_data.write("\n")
 
-    # Write 'unobfuscated' binaries' data in row 1
-    num_gadgets = 0
-    fw_data.write("unobfuscated\t\t")
-    print "Aggregating unobfuscated binaries' gadgets.."
-    print " "
-    for each_gadget_file in os.listdir(g_gadget_unobfusc_path):
-        if each_gadget_file.endswith(".cnt"):
-            num_gadgets += 1
-            aggregate_gadgets(g_gadget_unobfusc_path + each_gadget_file)
-    fw_data.write("%7u\t\t%7u\t\t%7u\t\t%7u\t\t%7u\t\t%7u" \
+    if (g_bin_flag):
+        # Write 'unobfuscated' binaries' data in row 1
+        fw_data.write("unobfuscated\t\t")
+        print "Aggregating unobfuscated \"%s\" binary's gadgets.." \
+                % (g_bin_file_name)
+        print " "
+        aggregate_gadgets(g_gadget_unobfusc_path + g_bin_file_name + ".gdt.cnt")
+        fw_data.write("%7u\t\t%7u\t\t%7u\t\t%7u\t\t%7u\t\t%7u" \
             % (g_cat_total, g_cat_memory, g_cat_arith, g_cat_logic, \
             g_cat_ctrl, g_cat_others))
-    fw_data.write("\n")
-    g_cat_total = g_cat_memory = g_cat_arith = \
+        fw_data.write("\n")
+        g_cat_total = g_cat_memory = g_cat_arith = \
             g_cat_logic = g_cat_ctrl = g_cat_others = 0
-    print "Aggregated %u unobfuscated binaries' gadgets." % (num_gadgets)
+        print "Aggregated data file location: %s" \
+                % (g_gadget_unobfusc_path + g_bin_file_name + ".dat")
 
-
-    # Write 'obfuscated' binaries' data in row 2
-    num_gadgets = 0
-    fw_data.write("obfuscated\t\t")
-    print "Aggregating obfuscated binaries' gadgets.."
-    print " "
-    for each_gadget_file in os.listdir(g_gadget_obfusc_path):
-        if each_gadget_file.endswith(".cnt"):
-            num_gadgets += 1
-            aggregate_gadgets(g_gadget_obfusc_path + each_gadget_file)
-    fw_data.write("%7u\t\t%7u\t\t%7u\t\t%7u\t\t%7u\t\t%7u" \
+        # Write 'obfuscated' binaries' data in row 2
+        fw_data.write("obfuscated\t\t")
+        print "Aggregating obfuscated \"%s\" binary's gadgets.." \
+                % (g_bin_file_name)
+        print " "
+        aggregate_gadgets(g_gadget_obfusc_path + g_bin_file_name + ".gdt.cnt")
+        fw_data.write("%7u\t\t%7u\t\t%7u\t\t%7u\t\t%7u\t\t%7u" \
             % (g_cat_total, g_cat_memory, g_cat_arith, g_cat_logic, \
             g_cat_ctrl, g_cat_others))
-    fw_data.write("\n")
-    g_cat_total = g_cat_memory = g_cat_arith = \
+        fw_data.write("\n")
+        g_cat_total = g_cat_memory = g_cat_arith = \
             g_cat_logic = g_cat_ctrl = g_cat_others = 0
-    print "Aggregated %u obfuscated binaries' gadgets." % (num_gadgets)
+        print "Aggregated gadget count data file location: %s" \
+                % (DATA_PATH + g_bin_file_name + ".dat")
+    else:
+        num_gadgets = 0
+        fw_data.write("unobfuscated\t\t")
+        print "Aggregating unobfuscated binaries' gadgets.."
+        print " "
+
+        # Go over all unobfuscated gdt.cnt files in the directory and aggregate
+        for each_gadget_file in os.listdir(g_gadget_unobfusc_path):
+            if each_gadget_file.endswith(".cnt"):
+                num_gadgets += 1
+                aggregate_gadgets(g_gadget_unobfusc_path + each_gadget_file)
+
+        fw_data.write("%7u\t\t%7u\t\t%7u\t\t%7u\t\t%7u\t\t%7u" \
+            % (g_cat_total, g_cat_memory, g_cat_arith, g_cat_logic, \
+            g_cat_ctrl, g_cat_others))
+        fw_data.write("\n")
+        g_cat_total = g_cat_memory = g_cat_arith = \
+            g_cat_logic = g_cat_ctrl = g_cat_others = 0
+        print "Aggregated %u unobfuscated binaries' gadgets." % (num_gadgets)
+
+
+        # Write 'obfuscated' binaries' data in row 2
+        num_gadgets = 0
+        fw_data.write("obfuscated\t\t")
+        print "Aggregating obfuscated binaries' gadgets.."
+        print " "
+
+        # Go over all obfuscated gdt.cnt files in the directory and aggregate
+        for each_gadget_file in os.listdir(g_gadget_obfusc_path):
+            if each_gadget_file.endswith(".cnt"):
+                num_gadgets += 1
+                aggregate_gadgets(g_gadget_obfusc_path + each_gadget_file)
+
+        fw_data.write("%7u\t\t%7u\t\t%7u\t\t%7u\t\t%7u\t\t%7u" \
+            % (g_cat_total, g_cat_memory, g_cat_arith, g_cat_logic, \
+            g_cat_ctrl, g_cat_others))
+        fw_data.write("\n")
+        g_cat_total = g_cat_memory = g_cat_arith = \
+                g_cat_logic = g_cat_ctrl = g_cat_others = 0
+        print "Aggregated %u obfuscated binaries' gadgets." % (num_gadgets)
+        print " "
+        print "Aggregated gadget count data file location: %s" \
+                % (DATA_PATH + DATA_FILE)
 
     fw_data.close()
-
-    print " "
-    print "Aggregated data file location: %s" % (DATA_PATH + DATA_FILE)
 
     end_time = time.time()
     exec_seconds = (end_time - start_time)
