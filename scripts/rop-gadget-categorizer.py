@@ -12,10 +12,16 @@
 import sys
 import os
 import os.path
+import getopt
 
 # Constants
 NUM_ARGS    = 2
-FILE_NAME   = None
+SCRIPT_NAME = "rop-gadget-categorizer.py"
+
+# Globals
+g_file_name             = None
+g_count_only_flag       = False
+g_print_gadgets_flag    = False
 
 #
 # Instructions to look for while categorizing the gadgets. This is based on
@@ -41,34 +47,62 @@ category_num_total  = 0
 # Desc: Prints a friendly help text on how to use this tool.
 # Args: None
 def print_usage():
+    print "Usage: %s OPTIONS" % (SCRIPT_NAME) 
+    print "Categorizes the ROP gadgets and prints the summary (or summary and gadgets) to a file."
     print " "
-    print "Usage: %s <Gadget-File>" %(str(sys.argv[0]))
-    print "<Gadget-File>: Output of ROPgadget.py in a text file."
+    print "OPTIONS"
+    print " -f, --gadget-file <ROP-Gadget-File> file containing the actual ROP gadgets"
+    print " -p, --print-gadgets                 print the gadget category summary along with the gadgets"
+    print " -h, --help                          prints this help text"
     return
 
 
 #
-# Name: check_args
-# Desc: Validates the arguments passed by the user.
+# Name: validate_args
+# Desc: Validates the user passed arguments and sets the globals.
+# Args: None.
 #
-def check_args():
-    global FILE_NAME
+def validate_args():
+    global g_file_name, g_count_only_flag, g_print_gadgets_flag
 
-    if (len(sys.argv) != NUM_ARGS):
-        print "ERROR: %s arguments are required. See usage." %(NUM_ARGS)
+    if (len(sys.argv) < NUM_ARGS):
+        print "ERROR: At least %s arguments are required. See usage." \
+                % (NUM_ARGS)
+        print " "
         print_usage()
         exit()
 
-    FILE_NAME = str(sys.argv[1])
-    if (False == (os.path.isfile(FILE_NAME))):
-        print "ERROR: Please enter a valid file name. See usage."
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "hf:p", ["help, gadget-file, print-gadgets"])
+    except getopt.GetoptError as err:
+        print "ERROR: %s. See usage." % (err)
+        print " "
         print_usage()
         exit()
+    for opt, arg in opts:
+        if (opt in ("-h", "--help")):
+            print_usage()
+            exit()
+        elif (opt in ("-p", "--print-gadgets")):
+            g_print_gadgets_flag = True
+        elif (opt in ("-f", "--gadget-file")):
+            g_file_name = str(arg)
+            if (False == (os.path.isfile(g_file_name))):
+                print "ERROR: Please enter a valid file name. See usage."
+                print " "
+                print_usage()
+                exit()
+            if (False == (os.access(g_file_name, os.R_OK))):
+                print "ERROR: FIle \"%s\" is not readable. See usage." %(g_file_name)
+                print " "
+                print_usage()
+                exit()
+        else:
+            print "ERROR: Invalid options. See usage."
+            print " "
+            print_usage()
+            exit()
 
-    if (False == (os.access(FILE_NAME, os.R_OK))):
-        print "ERROR: FIle \"%s\" is not readable. See usage." %(FILE_NAME)
-        print_usage()
-        exit()
 
     return
 
@@ -85,15 +119,23 @@ def categorize_gadget(gadget_str):
 
     if any(inst in gadget_str for inst in CATEGORY_MEM):
         category_num_mem += 1
+        gadget_type = "Memory: "
     elif any(inst in gadget_str for inst in CATEGORY_ARITH):
         category_num_arith += 1
+        gadget_type = "Arithmetic: "
     elif any(inst in gadget_str for inst in CATEGORY_LOGIC):
         category_num_logic += 1
+        gadget_type = "Logic: "
     elif any(inst in gadget_str for inst in CATEGORY_CTRL):
         category_num_ctrl += 1
+        gadget_type = "Control-flow: "
     else:
         category_num_other += 1
-    
+        gadget_type = "Others: "
+
+    if (g_print_gadgets_flag):
+        print "%s%s" % (gadget_type, gadget_str)
+
     return
 
 
@@ -102,14 +144,15 @@ def categorize_gadget(gadget_str):
 # Reads the passed in gadget file line by line and categorize them 
 # individually. Finally, prints the categorized gadget counts.
 #
-check_args()
+validate_args()
 
-fr = open(FILE_NAME, "r")
+fr = open(g_file_name, "r")
 for each_line in fr:
+    each_line = each_line.strip()
     category_num_total += 1
     categorize_gadget(each_line)
 
-print "Categorized gadget count for \"%s\"." %(os.path.basename(FILE_NAME))
+print "Categorized gadget count for \"%s\"." %(os.path.basename(g_file_name))
 print "Total gadgets        : %4u" %(category_num_total)
 print "Memory gadgets       : %4u" %(category_num_mem)
 print "Arithmetic gadgets   : %4u" %(category_num_arith)
