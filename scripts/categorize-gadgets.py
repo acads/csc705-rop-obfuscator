@@ -18,6 +18,9 @@ import getopt
 NUM_ARGS            = 2
 BIN_TYPE_OBFUSC     = "obfusc"
 BIN_TYPE_UNOBFUSC   = "unobfusc"
+OBFUSC_TYPE_BCF     = "bcf"
+OBFUSC_TYPE_FLA     = "fla"
+OBFUSC_TYPE_SUB     = "sub"
 GADGET_PATH         = "/home/hpjoshi/projects/csc705-rop-obfuscator/gadgets/"
 SCRIPT_NAME         = "categorize-gadgets.py"
 
@@ -36,9 +39,13 @@ def print_usage():
     print "Categorize obfuscated and unobfuscated coreutils gadgets."
     print " "
     print "OPTIONS"
-    print " -t, --gadget-type {obfusc | unobfusc}   type of gadgets "  \
-                    "to be categorized"
+    print " -t, --gadget-type {obfusc | unobfusc}   type of gadgets to be categorized"
+    print " -o, --obfusc-type {bcf | fla | sub}     type of obfuscated binary, default is all types"
     print " -h, -- help                             prints this help text"
+    print " "
+    print "EXAMPLES"
+    print " \"%s --gadget-type obfusc --obfusc-type fla\" categorizes fla type gadgets for obfuscated coretutils binaries"
+    print " \"%s --gadget-type unobfusc\" categorizes gadgets unobfuscated coretutils binaries"
     return
 
 
@@ -52,14 +59,16 @@ def validate_args():
 
     if (len(sys.argv) < NUM_ARGS):
         print "ERROR: Incorrect number of arguments. See usage."
+        print " "
         print_usage()
         exit()
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "ht:", \
-                ["help", "gadget-type="])
+        opts, args = getopt.getopt(sys.argv[1:], "ht:o:", \
+                ["help", "gadget-type=", "obfusc-type="])
     except getopt.GetoptError as err:
         print "ERROR: %s. See usage." % (err)
+        print " "
         print_usage()
         exit()
     for opt, arg in opts:
@@ -73,10 +82,28 @@ def validate_args():
             elif (BIN_TYPE_UNOBFUSC == arg):
                 g_gadget_type = BIN_TYPE_UNOBFUSC
                 g_gadget_path = GADGET_PATH + BIN_TYPE_UNOBFUSC + "/"
-            else:
-                print "ERROR: Incorrect argument. See usage."
+        elif (opt in ("-o", "--obfusc-type")):
+            if (BIN_TYPE_UNOBFUSC == g_gadget_type):
+                print "ERROR: Unobfuscated binaries cannot be used with obfusc-type. See usage."
+                print " "
                 print_usage()
                 exit()
+            if (OBFUSC_TYPE_BCF == arg):
+                g_gadget_path = g_gadget_path + OBFUSC_TYPE_BCF + "/"
+            elif (OBFUSC_TYPE_FLA == arg):
+                g_gadget_path = g_gadget_path + OBFUSC_TYPE_FLA + "/"
+            elif (OBFUSC_TYPE_SUB == arg):
+                g_gadget_path = g_gadget_path + OBFUSC_TYPE_SUB + "/"
+            else:
+                print "ERROR: Invalid obufsc-type. See usage."
+                print " "
+                print_usage()
+                exit()
+        else:
+            print "ERROR: Incorrect option(s). See usage."
+            print " "
+            print_usage()
+            exit()
 
 
 #
@@ -88,7 +115,7 @@ def validate_args():
 def categorize_gadgets(gadget_file):
     categorizer = \
             "/home/hpjoshi/projects/csc705-rop-obfuscator/scripts/rop-gadget-categorizer.py"
-    cmd = categorizer + " " + \
+    cmd = categorizer + " -f " + \
             g_gadget_path + gadget_file + \
             " > " + \
             g_gadget_path + gadget_file + ".cnt"
