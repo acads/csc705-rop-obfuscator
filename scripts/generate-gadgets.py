@@ -19,6 +19,9 @@ import subprocess
 NUM_ARGS            = 2
 BIN_TYPE_OBFUSC     = "obfusc"
 BIN_TYPE_UNOBFUSC   = "unobfusc"
+OBFUSC_TYPE_BCF     = "bcf"
+OBFUSC_TYPE_FLA     = "fla"
+OBFUSC_TYPE_SUB     = "sub"
 BIN_PATH            = "/home/hpjoshi/projects/csc705-rop-obfuscator/binaries/"
 GADGET_PATH         = "/home/hpjoshi/projects/csc705-rop-obfuscator/gadgets/"
 SCRIPT_NAME         = "generate-gadgets.py"
@@ -27,6 +30,7 @@ SCRIPT_NAME         = "generate-gadgets.py"
 g_bin_type      = None
 g_bin_path      = None
 g_gadget_path   = None 
+g_obfusc_type   = None
 
 
 #
@@ -36,13 +40,19 @@ g_gadget_path   = None
 #
 def print_usage():
     print "Usage: %s OPTIONS" % (SCRIPT_NAME) 
-    print "Generates ROP gadgets for obfuscated/unobfuscated "  \
-            "coreutils binaries."
+    print "Generates ROP gadgets for obfuscated/unobfuscated coreutils binaries."
     print " "
     print "OPTIONS"
     print " -t, --bin-type {obfusc | unobfusc}  type of binaries "  \
                     "to be tested for gadgets"
+    print " -o, --obfusc-type {bcf | fla | sub} type of obfuscated binary, default is all types"
     print " -h, -- help                         prints this help text"
+    print " "
+    print "EXAMPLES"
+    print " \"%s --bin-type obfusc --obfusc-type bcf\" generates bcf type gadgets for obfuscated binaries" \
+            % (SCRIPT_NAME)
+    print " \"%s --bin-type unobfusc\" generates gadgets for unobfuscated binaries" \
+            % (SCRIPT_NAME)
     return
 
 
@@ -52,17 +62,20 @@ def print_usage():
 # Args: None
 #
 def validate_args():
-    global g_bin_type, g_bin_path, g_gadget_path
+    global g_bin_type, g_bin_path, g_gadget_path, g_obfusc_type
 
     if (len(sys.argv) < NUM_ARGS):
         print "ERROR: Incorrect number of arguments. See usage."
+        print " "
         print_usage()
         exit()
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "ht:", ["help", "bin-type="])
+        opts, args = getopt.getopt(sys.argv[1:], "ht:o:", \
+                ["help", "bin-type=", "obfusc-type="])
     except getopt.GetoptError as err:
         print "ERROR: %s. See usage." % (err)
+        print " "
         print_usage()
         exit()
     for opt, arg in opts:
@@ -78,8 +91,27 @@ def validate_args():
                 g_bin_type = BIN_TYPE_UNOBFUSC
                 g_bin_path = BIN_PATH + BIN_TYPE_UNOBFUSC + "/"
                 g_gadget_path = GADGET_PATH + BIN_TYPE_UNOBFUSC + "/"
+        elif (opt in ("-o", "--obfusc-type")):
+            if (BIN_TYPE_UNOBFUSC == g_bin_type):
+                print "ERROR: Unobfuscated binaries cannot be used with obfusc-type. See usage."
+                print " "
+                print_usage()
+                exit()
+            if (OBFUSC_TYPE_BCF == arg):
+                g_obfusc_type = OBFUSC_TYPE_BCF
+                g_bin_path = g_bin_path + OBFUSC_TYPE_BCF + "/"
+                g_gadget_path = g_gadget_path + OBFUSC_TYPE_BCF + "/"
+            elif (OBFUSC_TYPE_FLA == arg):
+                g_obfusc_type = OBFUSC_TYPE_FLA
+                g_bin_path = g_bin_path + OBFUSC_TYPE_FLA + "/"
+                g_gadget_path = g_gadget_path + OBFUSC_TYPE_FLA + "/"
+            elif (OBFUSC_TYPE_SUB == arg):
+                g_obfusc_type = OBFUSC_TYPE_SUB
+                g_bin_path = g_bin_path + OBFUSC_TYPE_SUB + "/"
+                g_gadget_path = g_gadget_path + OBFUSC_TYPE_SUB + "/"
             else:
-                print "ERROR: Incorrect argument. See usage."
+                print "ERROR: Invalid obufsc-type. See usage."
+                print " "
                 print_usage()
                 exit()
 
