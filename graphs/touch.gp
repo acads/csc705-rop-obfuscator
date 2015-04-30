@@ -10,18 +10,17 @@ clear
 reset
 
 # Set final output termianl/file settings
-set terminal postscript eps enhanced color solid font 'Helvetica,10'
+set terminal postscript eps enhanced color solid font 'Helvetica,20'
 set output 'touch.eps'
 
 # Set graph title and where to place the keys
-set title 'touch - Categorized ROP Gadget Count for Unobfuscated and Obfuscated touch binary'
+set title 'Categorized ROP Gadget Count - touch binary'
 set key left top
 
 # Set the graph attributes. Horizontal grid, axes labels and position
 set grid y
 set ylabel 'Number of Unique Gadgets'
 set xlabel 'Gadget Categories'
-set xtics rotate by -45
 
 # Set histogram style: histogram, gap of 1 b/w bars and fill using solid colors
 set style data histogram

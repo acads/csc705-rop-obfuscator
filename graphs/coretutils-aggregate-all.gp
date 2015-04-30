@@ -1,7 +1,7 @@
 #
 # File: coretutils-aggregate-all.gp
 # Desc: Obfuscated (different types) vs unobfuscated categorized ROP gadget 
-#       count GNUplot graph file for all coreutils binaries.
+#       count gnuplot graph file for all coreutils binaries.
 #
 # Author: Aravindhan Dhanasekaran <adhanas@ncsu.edu>
 #
@@ -10,18 +10,17 @@ clear
 reset
 
 # Set final output termianl/file settings
-set terminal postscript eps enhanced color solid font 'Helvetica,10'
+set terminal postscript eps enhanced color solid font 'Helvetica,20'
 set output 'coretutils-aggregate-all.eps'
 
 # Set graph title and where to place the keys
-set title 'coreutils - Categorized ROP Gadget Count for Unobfuscated and Obfuscated (different types) binaries'
+set title 'Categorized ROP Gadget Count - coreutils binaries'
 set key left top
 
 # Set the graph attributes. Horizontal grid, axes labels and position
 set grid y
 set ylabel 'Number of Unique Gadgets'
 set xlabel 'Gadget Categories'
-set xtics rotate by -45
 
 # Set histogram style: histogram, gap of 1 b/w bars and fill using solid colors
 set style data histogram
