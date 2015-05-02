@@ -1,0 +1,109 @@
+\section{Overview and Experimental Design}
+\label{sec:design}
+
+In this paper, we hypothesize that \textit{obfuscation tools make software 
+more susceptible to ROP attacks}. This is based on our observation that 
+obfuscation tools add redundant code to the software, change control 
+flows, add conditionals, etc. which can increase the number of gadgets in 
+the binary.
+
+In order to study the susceptibility of a software to ROP attacks, we 
+identify the catalog of gadgets in the code. It may seem that a software 
+with a larger number of gadgets would be more susceptible to ROP attacks. 
+However, there is limited advantage of repetitive gadgets, and variety is 
+more important in order to chain them together and accomplish a useful 
+task. Hence, if a software contains a full catalog of gadgets that is  
+Turing-complete, then we consider it to be more susceptible than a 
+software with an incomplete catalog of gadgets. 
+
+To evaluate our hypothesis, we find and compare gadgets in obfuscated and 
+unobfuscated versions of a large number of binaries. We use a set of open 
+source software of different size and type including libraries. We use 
+Linux as both the development and the target platform for the binaries, 
+and use LLVM tool chain for compiler. This is in order to use an LLVM 
+based obfuscation tool called Obfuscator-LLVM~\cite{webLLVMobfusc}. The 
+tool performs obfuscation transformations on LLVM bytecode, and thus can 
+work with a variety of LLVM front-end (e.g. C, C++, etc.) and back-ends 
+(x86, MIPS, ARM, etc.). We build the obfuscated version of the software 
+for Linux using the same clang compiler with the same flags as used to 
+build the unobfuscated binaries. We perform our analysis on both these 
+sets of binaries. 
+
+We use an ROP gadget finding tool, ROPgadget~\cite{webRopgadget}, to 
+identify potential gadgets in binary. A list of all unique gadgets found 
+in the unobfuscated binary is created, and then compared against the list 
+from obfuscated binary. We have written our own tool to categorize these 
+gadgets based on their functionality. We also look at the total number of 
+gadgets found, and the total number of unique gadgets found in a binary.
+
+
+\subsection{Binaries Selection}
+\label{sec:sampleselect}
+We use two sets of software, GNU Coreutils \cite{coreutilsdd} and 
+OpenSSL~\cite{webOpenssl} as target binaries for our evaluation. Since we 
+believe that the increase in size of binary due to obfuscation may impact 
+its ROP susceptibility, we want to evaluate on binaries of different 
+sizes. In order to be realistic, we should use binaries that are likely to 
+be obfuscated. A DRM protection software is a prime candidate for this, 
+however, such software is unlikely to be distributed as open source. We 
+decided instead to use software that is security sensitive but openly 
+available. We use OpenSSL, and specifically its libraries lissl and 
+libcrypto as an example of commonly used security sensitive libraries. We 
+tried to use glibc, which is more commonly used but it does not compile 
+under LLVM toolchain. 
+
+GNU Coreutils include utilities like \texttt{cp, mv, ls, date}, etc. which 
+are included in nearly all Linux distributions. Some of these utilities 
+can also be considered to be part of these Linux distribution's trusted 
+computing base (TCB) since they get frequently run as root. The Coreutils 
+package includes 106 utilities of varying size and thus provides us with a 
+good base for our evaluation. For more detailed analysis we select a 
+subset of these utilities again based on their security sensitiveness, and 
+their potential to do harm. These include \texttt{link, chroot, shred, 
+touch, date, cp}. We select \texttt{touch} and \texttt{date} due to recent 
+vulnerability CVE-2014-9471 that may allow arbitrary code execution or 
+denial of service attack. We select \texttt{shred} due to expectation of 
+secure removal of files, while the others (\texttt{link, cp, chroot}) for 
+their potential for misuse.
+
+
+\subsection{Obfuscation Tool}
+\label{sec:obfllvm}
+While there are several software obfuscation tools available, we had 
+difficulty finding suitable tools for our purpose. Software obfuscation is 
+particularly popular for Java programs, since they are easy to reverse 
+engineer, and a large number of tools and techniques are designed for 
+Java. Majority of obfuscation tools for C/C++ are neither open-source nor 
+free. The Tigress~\cite{webTigress} is one of the free tools available for 
+C, with many obfuscation transforms. However, it is not open source and 
+does not seem to be actively maintained. 
+Obfuscator-LLVM~\cite{webLLVMobfusc} is an open source project to build an 
+obfuscator for LLVM tool-chain. It works on LLVM's intermediate 
+representation (IR) level, and so it can take advantage of LLVM's 
+front-end and back-end which support many languages including C and C++, 
+and architectures such as x86, arm, mips, etc. Since, this is a fairly new 
+project, it has limited obfuscating transforms available. These are:
+
+\begin{itemize}
+    \item Instruction Substitution (SUB): This obfuscation technique 
+    relies on substituting one set of instructions with another set of 
+    instructions while maintaining the same functionality. In 
+    Obfuscator-LLVM, this obfuscation substitutes standard binary 
+    operators (like addition, subtraction or boolean operators) by 
+    functionally equivalent, but more complicated sequences of 
+    instructions. This is a basic, straightforward obfuscation and does 
+    not add a lot of security. 
+    
+    \item Control Flow Flattening (FLA): This obfuscation flattens the 
+    control flow graph of the program so that the structure of the program 
+    cannot be easily understood by static analysis like disassembly. This 
+    is achieved by identifying and moving blocks in a function which are 
+    at nested levels, next to each other. The selection of control flow to 
+    a particular block is done using a switch statement and a control 
+    variable that keeps track of the state of the program. 
+
+    \item Bogus Control Flow (BCF): This obfuscation modifies a function 
+    call graph by adding a basic block before the current basic block. 
+    This new basic block contains an opaque predicate and then makes a 
+    conditional jump to the original basic block.
+\end{itemize}

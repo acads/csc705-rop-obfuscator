@@ -1,0 +1,55 @@
+\section{Introduction}
+\label{sec:introduction}
+
+Software developers have two broad security concerns: (1) vulnerabilities that 
+lead to exploitation of the software (e.g. buffer overflow); (2) reverse 
+engineering (e.g. software or music piracy). The first concern is based on the 
+threat model where the software runs on a benign host, and the goal is to 
+protect the software in order to protect the host system and the information 
+the software has access to. An example of this threat model is an unprivileged 
+attacker exploits vulnerability in software to gain access to restricted 
+information. The second concern however, is based on a very different threat 
+model where the host or the privileged user is malicious and tries subvert the 
+restrictions set by software developers. An example would be reverse 
+engineering DRM protection software for music or movies piracy. 
+
+Some developers use static analysis tools to prevent vulnerabilities such as 
+buffer overflow; however, many others rely on OS level protections such as 
+ASLR and W$\oplus$X. Protection against reverse engineering is generally 
+achieved via software obfuscation tools and cannot leverage OS support. 
+
+Given the pervasiveness of ASLR and W$\oplus$X in operating systems, attackers 
+have begun using return oriented programming. Return Oriented Programming 
+(ROP) is a technique through which an attacker can introduce changes to a 
+program's control flow using many short code snippets,  
+called gadgets, present in a program's address space. ROP allows attackers to  
+exploit buffer overflow vulnerabilities even when ASLR or W$\oplus$X 
+protection is enabled. The goal of the attacker using ROP is to exploit a 
+vulnerability (buffer overflow) in client software in order to compromise the 
+host system. Thus, this is a technique used by attackers in our first threat 
+model. 
+
+Even the software that requires protection against the second threat model 
+should be secure against the first threat model in order to protect the benign 
+hosts it may run on. However, some of the software obfuscation techniques used 
+in practice may impact the vulnerability of the software to the first threat 
+model. Some commonly used obfuscation techniques include adding dead or 
+irrelevant code, and changing control flow graphs by splitting or merging 
+functions and adding opaque predicates. We study the impact of software 
+obfuscation on the program's vulnerability to ROP based attacks. An ROP based 
+attack depends on stringing together gadgets in the code in order to perform 
+arbitrary action. In ~\cite{roemer2012return}, a catalog of x86 gadgets are 
+identified for a Turing-complete ROP. A software with a larger number of 
+gadgets from this catalog is more easier to exploit using ROP by an attacker, 
+assuming they find an entry through vulnerabilities like buffer overflow. We 
+analyze a set of open source software binaries in terms of the catalog of 
+gadgets they contain, and compare this with the gadgets found in obfuscated 
+versions of the same software. Based 
+on our experiments, we show that obfuscation significantly impacts the number of gadgets in a binary and can potentially make an ROP attack easier. 
+
+The rest of the paper is organized as follows. Section 2 explains the 
+background information for this work, including a brief introduction to 
+return oriented programming, current state of defenses against ROP and about 
+popular code obfuscation techniques. Section 3 provides a brief overview of 
+our work, outlines the design and implementation details, followed 
+by evaluation methods and results in section 4. Section 5 includes related work and finally we conclude our work in section 6.

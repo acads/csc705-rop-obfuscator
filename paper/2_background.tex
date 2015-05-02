@@ -1,0 +1,71 @@
+\section{Background}
+\label{sec:background}
+
+\subsection {Return Oriented Programming}
+Return Oriented Programming \cite{roemer2012return} is made possible by 
+making use of gadgets. Each gadget ends with a `return' or `jump' 
+instruction, which is used to chain together several such gadgets to alter 
+the program's behavior and each gadget might perform a different operation, 
+say a load, adding registers and a jump. On the whole, return oriented 
+programming can be viewed as the generalized notion of return-to-libc 
+\cite{wojtczuk2001advanced} types of attacks. Current research is focused on 
+defending, or eliminating, return oriented programming attacks as they are 
+proven \cite{krahmer2005x86} to be ineffective against the major defense 
+against execution of malicious code - W$\oplus$X protection model. In 
+W$\oplus$X model, a memory page is either writable or executable, but not 
+both, which prevents all types of code injection attacks. In return oriented 
+programming attacks, the attacker does not inject any code and just alters the 
+program execution by executing already existing code in an arbitrary fashion.
+
+A return oriented program consists of several gadgets arranged carefully to 
+meet the attacker's goal. These gadgets must be in the memory, in the address 
+space of the executing program or in the address space of a library used by 
+the program. Most of the gadgets fall under five broad categories: (1) load/
+store (move to/from register/memory), (2) arithmetic and logical (add, sub, 
+and, xor, bitwise and shifts), (3) control flow (jmp and ret), (4) system 
+calls (int 0x80 followed by call, ret) and (5) function calls (call, ret). The 
+instruction sequences that are chosen to be gadgets can be identified by the 
+presence of `ret' instructions or by identifying unintended instruction 
+sequences. The latter is possible only in case of x86 architecture as it 
+supports unaligned, variable length instructions. This can be exploited by 
+moving the instruction pointer to an offset within the instruction, which 
+changes the interpretation of the current and the following instructions until 
+a `ret' or a `jmp' instruction is decoded. The gadgets need not to be 
+contiguous and can be chained by means of return or jump instructions. The 
+first in line gadget should be executed by redirecting the stack pointer, 
+which can be accomplished by a simple buffer overflow.
+
+
+\subsection {Defenses Against ROP}
+The attacks that fall under return oriented programming paradigm are very 
+broad, but still there are many defense mechanisms to mitigate or to prevent 
+ROP based attacks. This section briefs few such mechanisms.
+
+Code randomization \cite{pappas2012smashing} is a technique in which the 
+intended instruction sequences, of a binary, to be used as a gadget, are 
+randomized through in-place, narrow code transformations. The performance 
+overhead is negligible as no new code is inserted. When used along with other 
+code randomization procedures, such as, Address Space Layout Randomization 
+(ASLR) \cite{shacham2004effectiveness}, it disrupts 10\% and 80\%, effectively 
+and probabilistically, of the instruction sequences in a binary. 
+ROPdefender \cite{davi2011ropdefender} is a tool that adds additional code to a 
+binary, to observe the program's execution behavior, using just-in-time 
+compiler. It can prevent all return instruction based attacks and detect 
+unintended instruction attacks. It doesn't need the program source code as it 
+uses a JIT compiler. The performance overhead of ROPdefender is almost 100\%. 
+XFI \cite{erlingsson2006xfi}, based on control flow integrity 
+\cite{abadi2005control}, in addition to flexible access control and 
+fundamental integrity guarantees, also offers stack protection with return 
+address safety. XFI can protect return address based ROP attacks using 
+intended instruction sequences.
+
+
+\subsection{Software Obfuscation Techniques}
+Software obfuscation is achieved by a sequence of transformations on the code 
+in order to obscure the purpose of the code while maintaining its original 
+behavior. There have been several obfuscating transformations identified in 
+literature ~\cite{nagra2009surreptitious, collberg2002watermarking}. These  
+include inserting opaque predicates which are difficult to evaluate at compile 
+time; inserting dead or irrelevant code; cloning, splitting or merging 
+functions; control flow flattening; etc. More details about some of these 
+obfuscation techniques are discussed in section~\ref{sec:obfllvm}.
